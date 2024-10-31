@@ -316,7 +316,7 @@
   .nav-menu {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 20px;
   }
 
   .nav-item {
