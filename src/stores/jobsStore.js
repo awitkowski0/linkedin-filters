@@ -12,14 +12,7 @@ export async function fetchJobs() {
   loadingJobs.set(true);
   jobsError.set(null);
 
-  const appId = process.env.ADZUNA_ID;
-  const appKey = process.env.ADZUNA_KEY;
-
-  const url = new URL(`https://api.adzuna.com/v1/api/jobs/us/search/1`);
-  url.searchParams.append('app_id', appId);
-  url.searchParams.append('app_key', appKey);
-  url.searchParams.append('results_per_page', '50');
-  url.searchParams.append('content-type', 'application/json');
+  const url = new URL('/api/jobs', window.location.origin);
 
   // Get the current search parameters
   const params = get(searchParams);
@@ -34,10 +27,11 @@ export async function fetchJobs() {
   try {
     const response = await fetch(url.toString());
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.error || `API error: ${response.status} ${response.statusText}`);
     }
     const data = await response.json();
-    jobs.set(data.results);
+    jobs.set(data);
   } catch (error) {
     console.error('Error fetching jobs:', error);
     jobsError.set(error);
