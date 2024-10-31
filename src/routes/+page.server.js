@@ -16,7 +16,9 @@ export async function load({ fetch, url }) {
       const jobsData = await response.json();
       return { jobs: jobsData };
     } else {
-      throw error(response.status, 'Failed to load jobs');
+      const errorData = await response.json();
+      console.error('Error fetching jobs:', errorData);
+      throw error(response.status, errorData.error || 'Failed to load jobs');
     }
   } catch (err) {
     console.error('Load function error:', err);
