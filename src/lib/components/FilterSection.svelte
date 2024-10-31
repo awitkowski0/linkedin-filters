@@ -1,5 +1,6 @@
 <script>
-  import { filters, antiFilters, searchParams } from '../../stores/stores.js';
+  import { filters, antiFilters } from '../../stores/stores.js';
+  import { goto } from '$app/navigation';
 
   // Inputs for filters
   let filterInput = '';
@@ -11,15 +12,29 @@
   let company = '';
   let remoteOnly = false;
 
-  // Update the `searchParams` store when inputs change
-  $: searchParams.update((params) => ({
-    ...params,
-    salary_min: salaryMin,
-    salary_max: salaryMax,
-    category: experienceLevel,
-    company,
-    what: remoteOnly ? `${params.what || ''} remote` : params.what || '',
-  }));
+  // Reactive statement to update the URL when filters change
+  $: updateURL();
+
+  function updateURL() {
+    const params = new URLSearchParams();
+
+    // Retrieve existing query parameters from the current URL
+    const currentParams = new URLSearchParams(window.location.search);
+
+    // Preserve 'what' and 'where' from the header search
+    if (currentParams.get('what')) params.set('what', currentParams.get('what'));
+    if (currentParams.get('where')) params.set('where', currentParams.get('where'));
+
+    // Include filters in the URL
+    if (salaryMin) params.set('salary_min', salaryMin);
+    if (salaryMax) params.set('salary_max', salaryMax);
+    if (experienceLevel) params.set('category', experienceLevel);
+    if (company) params.set('company', company);
+    if (remoteOnly) params.set('remote_only', 'true');
+
+    // Update the URL without reloading the page
+    goto(`?${params.toString()}`, { noscroll: true });
+  }
 
   // Functions to manage filters
   function addFilter() {
@@ -70,11 +85,8 @@
     filters.set([]);
     antiFilters.set([]);
 
-    // Preserve `what` and `where` from the header in `searchParams`
-    searchParams.update((params) => ({
-      what: params.what,
-      where: params.where,
-    }));
+    // Update the URL to reflect the cleared filters
+    updateURL();
   }
 </script>
 <section class="filter-section">

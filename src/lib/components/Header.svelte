@@ -1,13 +1,19 @@
 <script>
+  import { goto } from '$app/navigation';
+
   // Variables for the search inputs
   let title = '';
   let location = '';
 
   // Function to handle the search button click
   function handleSearch() {
-    // You can use the `title` and `location` variables here for your request
-    console.log('Search clicked with:', { title, location });
-    // Implement your search logic here
+    const params = new URLSearchParams();
+
+    if (title) params.set('what', title);
+    if (location) params.set('where', location);
+
+    const queryString = params.toString();
+    goto(`?${queryString}`, { noscroll: true });
   }
 </script>
 
