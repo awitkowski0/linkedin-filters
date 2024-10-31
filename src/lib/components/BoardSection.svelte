@@ -1,21 +1,32 @@
 <script>
   import JobCard from './JobCard.svelte';
+  import { jobs, loadingJobs, jobsError } from '../../stores/jobsStore.js';
+  import { filters, antiFilters } from '../../stores/stores.js';
 
-  // Sample job data
-  let jobs = [
-    {
-      id: 1,
-      title: 'Junior Developer',
-      company: 'CloudRx Pharmacy Hub',
-      location: 'Dallas, TX (On-site)',
-      companyLogo: 'path/to/cloudrx-logo.png',
-      description: 'Job description here...',
-      // Add more job details as needed
-    },
-    // Add more job objects
-  ];
+  let selectedJob = null;
 
-  let selectedJob = jobs[0]; // Default selected job
+  // Compute filteredJobs using filters and antiFilters
+  $: filteredJobs = $jobs.filter((job) => {
+    const activeFilters = $filters.filter((f) => f.enabled).map((f) => f.text.toLowerCase());
+    const activeAntiFilters = $antiFilters.filter((f) => f.enabled).map((f) => f.text.toLowerCase());
+
+    const jobText = `${job.title} ${job.company.display_name} ${job.location.display_name}`.toLowerCase();
+
+    // Match logic
+    const matchesFilter =
+      activeFilters.length === 0 || activeFilters.some((filter) => jobText.includes(filter));
+
+    const matchesAntiFilter = activeAntiFilters.some((antiFilter) => jobText.includes(antiFilter));
+
+    return matchesFilter && !matchesAntiFilter;
+  });
+
+  // Update selectedJob when filteredJobs change
+  $: {
+    if (!filteredJobs.includes(selectedJob)) {
+      selectedJob = filteredJobs[0] || null;
+    }
+  }
 
   function handleSelectJob(event) {
     selectedJob = event.detail;
@@ -27,16 +38,27 @@
     <h2>Job List</h2>
   </header>
   <div class="board-content">
-    <!-- Left Side: Job List -->
-    <div class="left-side">
-      {#each jobs as job}
-        <JobCard
-          {job}
-          isActive={job.id === selectedJob.id}
-          on:selectJob={handleSelectJob}
-        />
-      {/each}
-    </div>
+  <div class="left-side">
+    {#if $loadingJobs}
+      <p class="loading">Loading jobs...</p>
+    {:else if $jobsError}
+      <p class="error">Error loading jobs: {$jobsError.message}</p>
+    {:else if filteredJobs.length > 0}
+      <ul class="job-list">
+        {#each filteredJobs as job}
+          <li>
+            <JobCard
+              {job}
+              isActive={job.id === selectedJob?.id}
+              on:selectJob={handleSelectJob}
+            />
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <p class="no-results">No jobs match your filters.</p>
+    {/if}
+  </div>
 
     <!-- Right Side: Job Details -->
     <div class="right-side">

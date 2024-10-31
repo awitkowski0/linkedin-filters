@@ -1,14 +1,11 @@
+<!-- src/routes/+layout.svelte -->
 <script>
-  import Header from '$lib/components/Header.svelte';
+  import Header from '../lib/components/Header.svelte';
 </script>
 
+<!-- Header Component -->
 <Header />
 
-<slot /> <!-- This is where your page content will be rendered -->
+<!-- Page Content -->
+<slot />
 
-<style>
-  :global(body) {
-    background-color: #F4F2EE;
-    margin: 0;
-  }
-</style>
