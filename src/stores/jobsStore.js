@@ -12,20 +12,15 @@ export async function fetchJobs() {
   loadingJobs.set(true);
   jobsError.set(null);
 
-  const url = new URL('/api/jobs', window.location.origin);
-
-  // Get the current search parameters
-  const params = get(searchParams);
-
-  // Add parameters to the URL
-  Object.entries(params).forEach(([key, value]) => {
+  const params = new URLSearchParams();
+  Object.entries(get(searchParams)).forEach(([key, value]) => {
     if (value) {
-      url.searchParams.append(key, value);
+      params.append(key, value);
     }
   });
 
   try {
-    const response = await fetch(url.toString());
+    const response = await fetch(`/api/jobs?${params.toString()}`);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || `API error: ${response.status} ${response.statusText}`);
